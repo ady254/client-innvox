@@ -66,3 +66,32 @@ body {
   border-color: rgba(197, 168, 128, 0.5);
   box-shadow: 0 0 15px rgba(197, 168, 128, 0.1);
 }
+
+/* Custom Premium Infinite Horizontal Text Scroll Ticker */
+@keyframes marquee-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.marquee-container {
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 45s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}

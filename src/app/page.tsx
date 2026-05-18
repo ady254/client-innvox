@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { Herr_Von_Muellerhoff } from "next/font/google";
 import gsap from "gsap";
 import {
   Armchair,
@@ -54,10 +55,10 @@ const SlideInButton: React.FC<SlideInButtonProps> = ({
 }) => {
   const baseStyles = "relative overflow-hidden font-medium text-xs tracking-[0.2em] uppercase transition-colors duration-500 py-3.5 px-7 select-none flex items-center justify-center gap-2.5 rounded-none";
   const bgLayerStyles = "absolute inset-0 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] origin-bottom scale-y-0 group-hover:scale-y-100";
-  
+
   let textColorStyles = "";
   let bgStyles = "";
-  
+
   if (variant === "gold") {
     textColorStyles = "text-[#0B0C0E] hover:text-gold-300 bg-gold-300";
     bgStyles = "bg-[#0B0C0E]";
@@ -105,6 +106,257 @@ const SlideInButton: React.FC<SlideInButtonProps> = ({
       className={`group ${baseStyles} ${textColorStyles} ${className}`}
     >
       <InnerContent />
+    </button>
+  );
+};
+
+// --- Custom Premium Canvas Mouse Trail Component ---
+const CanvasMouseTrail: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pointsRef = useRef<{ x: number; y: number; age: number }[]>([]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const handleResize = () => {
+      canvas.width = window.innerWidth * window.devicePixelRatio;
+      canvas.height = window.innerHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    const handleMouseMove = (e: MouseEvent) => {
+      pointsRef.current.push({
+        x: e.clientX,
+        y: e.clientY,
+        age: 0
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    let animationFrameId: number;
+    const maxPoints = 20; // Perfect trail length for an elegant tail
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const points = pointsRef.current;
+
+      // Update ages and clean up
+      for (let i = 0; i < points.length; i++) {
+        points[i].age += 1;
+      }
+
+      while (points.length > maxPoints) {
+        points.shift();
+      }
+
+      // Draw elegant staggered trailing light dots
+      if (points.length > 1) {
+        for (let i = 0; i < points.length; i++) {
+          const pt = points[i];
+          const opacity = (i / points.length) * 0.45;
+          const size = (i / points.length) * 3.5; // Smooth tapered fading tail
+
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, size, 0, Math.PI * 2);
+
+          // Luxury glowing gold color matches brand colors
+          ctx.fillStyle = `rgba(229, 218, 194, ${opacity})`;
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = "rgba(197, 160, 89, 0.5)";
+          ctx.fill();
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none fixed inset-0 z-[9999] w-full h-full mix-blend-screen"
+      style={{ display: "block" }}
+    />
+  );
+};
+
+// Initialize the master signature font
+const signatureFont = Herr_Von_Muellerhoff({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// --- Custom Premium Cursive Handwriting Animated Signature Component ---
+const AnimatedSignature: React.FC = () => {
+  const letters = ["H", "'", "B", "a", "r", "l", "e", "t", "t", "o"];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08, // fast elegant draw pace
+        delayChildren: 0.15,
+      }
+    }
+  };
+
+  const letterVariants = {
+    hidden: {
+      opacity: 0,
+      y: 12,
+      scale: 0.75,
+      rotate: -8
+    },
+    visible: {
+      opacity: 0.18,
+      y: 0,
+      scale: 1,
+      rotate: 0,
+      transition: {
+        duration: 0.7,
+        ease: [0.25, 1, 0.5, 1] as any
+      }
+    }
+  };
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-80px" }}
+      className={`absolute bottom-[-30px] right-[-20px] md:bottom-[-50px] md:right-[-30px] z-0 select-none pointer-events-none ${signatureFont.className} text-[6rem] sm:text-[8rem] md:text-[10rem] lg:text-[12.5rem] text-gold-500 font-light flex items-center`}
+      style={{ transformOrigin: "bottom right", rotate: -15 }}
+    >
+      {letters.map((char, index) => (
+        <motion.span
+          key={index}
+          variants={letterVariants}
+          style={{ display: "inline-block" }}
+        >
+          {char}
+        </motion.span>
+      ))}
+    </motion.div>
+  );
+};
+
+// --- Custom Premium Scroll-Driven Word Fade Component ---
+const ScrollRevealText: React.FC<{ text: string; className?: string }> = ({ text, className = "" }) => {
+  const words = text.split(" ");
+
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.025, // incredibly fluid reading flow stagger
+      }
+    }
+  };
+
+  const wordVariants = {
+    hidden: {
+      opacity: 0.2, // starts beautiful, muted, low opacity
+      y: 2
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut" as any
+      }
+    }
+  };
+
+  return (
+    <motion.p
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-80px" }}
+      className={className}
+    >
+      {words.map((word, idx) => (
+        <motion.span
+          key={idx}
+          variants={wordVariants}
+          className="inline-block mr-[0.24em] will-change-[opacity,transform]"
+        >
+          {word}
+        </motion.span>
+      ))}
+    </motion.p>
+  );
+};
+
+// --- Custom Premium 3D Isometric Tactile Button Component ---
+interface Book3DButtonProps {
+  href?: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+  className?: string;
+}
+
+const Book3DButton: React.FC<Book3DButtonProps> = ({ href, onClick, children, className = "" }) => {
+  const baseStyles = "relative inline-block group select-none cursor-pointer focus:outline-none";
+
+  const buttonContent = (
+    <>
+      {/* 3D Extruded Depth Under-Edge */}
+      <span className="absolute inset-0 rounded-full bg-gold-600 translate-y-[4px] transition-transform duration-200 ease-out" />
+
+      {/* Soft Tactile Drop Shadow */}
+      <span className="absolute inset-0 rounded-full bg-black/50 blur-[5px] translate-y-[6px] opacity-70 group-hover:translate-y-[8px] group-hover:opacity-90 transition-all duration-200" />
+
+      {/* Interactive Tactile Face */}
+      <span className="relative block px-8 py-3.5 rounded-full bg-gold-300 text-dark-400 text-[10px] tracking-[0.2em] font-bold uppercase transition-transform duration-200 ease-out translate-y-0 group-hover:-translate-y-[3px] group-active:translate-y-[1px] border border-gold-300/40 shadow-md">
+        {children}
+      </span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        onClick={onClick}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`${baseStyles} ${className}`}
+      >
+        {buttonContent}
+      </a>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${baseStyles} ${className}`}
+    >
+      {buttonContent}
     </button>
   );
 };
@@ -360,6 +612,7 @@ export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [activeHeroSlide, setActiveHeroSlide] = useState(1);
   const [activeStep, setActiveStep] = useState(1);
+  const [autoplayTimeline, setAutoplayTimeline] = useState(true);
   const [activePodcastId, setActivePodcastId] = useState<number | null>(null);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [consultationModalOpen, setConsultationModalOpen] = useState(false);
@@ -402,6 +655,15 @@ export default function Home() {
     }, 6500);
     return () => clearInterval(timer);
   }, []);
+
+  // Autoplay process timeline steps every 4.5 seconds
+  useEffect(() => {
+    if (!autoplayTimeline) return;
+    const timer = setInterval(() => {
+      setActiveStep((prev) => (prev === 5 ? 1 : prev + 1));
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [autoplayTimeline]);
 
   // GSAP opening sequence and splash screen animation
   useEffect(() => {
@@ -489,7 +751,7 @@ export default function Home() {
   // Handle Form Submit
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Construct premium formatted message
     const msg = `Hello H'Barletto Team,
 
@@ -511,13 +773,13 @@ Looking forward to creating something beautiful together.`;
     setTimeout(() => {
       setIsSubmitted(false);
       setConsultationModalOpen(false);
-      setFormData({ 
-        name: "", 
-        email: "", 
-        phone: "", 
-        service: "Residential Design", 
-        date: "", 
-        message: "" 
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        service: "Residential Design",
+        date: "",
+        message: ""
       });
     }, 2000);
   };
@@ -541,6 +803,7 @@ Looking forward to creating something beautiful together.`;
 
   return (
     <div className="relative min-h-screen bg-[#0B0C0E]">
+      <CanvasMouseTrail />
 
       {/* --- SPLASH SCREEN EFFECT --- */}
       {!splashCompleted && (
@@ -590,8 +853,8 @@ Looking forward to creating something beautiful together.`;
 
       {/* --- NAVIGATION BAR --- */}
       <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 border-b ${scrolled
-          ? "bg-[#0B0C0E]/95 backdrop-blur-md py-4 border-gold-300/10 shadow-lg shadow-black/30"
-          : "bg-transparent py-7 border-transparent"
+        ? "bg-[#0B0C0E]/95 backdrop-blur-md py-4 border-gold-300/10 shadow-lg shadow-black/30"
+        : "bg-transparent py-7 border-transparent"
         }`}>
         <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
           <Logo />
@@ -743,10 +1006,16 @@ Looking forward to creating something beautiful together.`;
               </motion.div>
             </AnimatePresence>
 
-            <div className="hero-cta flex items-center gap-6">
+            <div className="hero-cta flex flex-wrap items-center gap-6 mt-6">
+              <Book3DButton
+                href="https://wa.me/919601415227?text=Hello%20H'Barletto%20Design,%20I%20would%20like%20to%20book%20a%20luxury%20design%20call."
+              >
+                BOOK A CALL
+              </Book3DButton>
+
               <SlideInButton
                 href="#projects"
-                variant="gold"
+                variant="border-gold"
                 className="px-8 py-3.5"
               >
                 EXPLORE PROJECTS
@@ -787,10 +1056,12 @@ Looking forward to creating something beautiful together.`;
       </section>
 
 
+
+
       {/* --- ALL UNDER ONE ROOF PILLARS SECTION --- */}
       <section className="relative z-20 bg-[#F9F8F6] py-24 border-b border-[#E5DAC2]/30 text-[#1C1C1C]">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
-          
+
           {/* Main Title & Concept Subtitle */}
           <div className="text-center max-w-3xl mx-auto mb-20">
             <span className="block text-xs tracking-[0.4em] text-gold-500 font-semibold mb-4 uppercase">
@@ -801,26 +1072,26 @@ Looking forward to creating something beautiful together.`;
                 All Under One Direct Roof.
               </h2>
             </div>
-            <p className="text-sm text-black/60 leading-relaxed font-light">
-              By seamlessly merging visionary architecture, bespoke interior styling, and direct global import logistics, we eliminate standard designer markups, coordination delays, and brokerage friction. A single signature team overseeing your masterpiece from concept to white-glove handover.
-            </p>
+            <ScrollRevealText
+              text="By seamlessly merging visionary architecture, bespoke interior styling, and direct global import logistics, we eliminate standard designer markups, coordination delays, and brokerage friction. A single signature team overseeing your masterpiece from concept to white-glove handover."
+              className="text-sm text-black/60 leading-relaxed font-light"
+            />
           </div>
 
           {/* The Three Pillars Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-0 relative">
-            
+
             {/* Pillar 1: Architecture */}
-            <div 
+            <div
               onMouseEnter={() => setActivePillar(1)}
               onMouseLeave={() => setActivePillar(null)}
               onClick={() => setActivePillar(activePillar === 1 ? null : 1)}
-              className={`flex flex-col items-center lg:items-start text-center lg:text-left p-6 lg:p-10 transition-all duration-700 cursor-pointer select-none rounded-2xl ${
-                activePillar === 1
+              className={`flex flex-col items-center lg:items-start text-center lg:text-left p-6 lg:p-10 transition-all duration-700 cursor-pointer select-none rounded-2xl ${activePillar === 1
                   ? "bg-white shadow-xl ring-1 ring-[#E5DAC2]/30 scale-[1.03] translate-y-[-4px] z-10"
                   : activePillar !== null
-                  ? "opacity-35 filter grayscale scale-[0.97]"
-                  : "bg-transparent border-b lg:border-b-0 lg:border-r border-[#E5DAC2]/30 rounded-none"
-              }`}
+                    ? "opacity-35 filter grayscale scale-[0.97]"
+                    : "bg-transparent border-b lg:border-b-0 lg:border-r border-[#E5DAC2]/30 rounded-none"
+                }`}
             >
               <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gold-300/10 text-gold-600 mb-6">
                 <Compass className="w-7 h-7 stroke-[1.2]" />
@@ -845,17 +1116,16 @@ Looking forward to creating something beautiful together.`;
             </div>
 
             {/* Pillar 2: Interior Designing */}
-            <div 
+            <div
               onMouseEnter={() => setActivePillar(2)}
               onMouseLeave={() => setActivePillar(null)}
               onClick={() => setActivePillar(activePillar === 2 ? null : 2)}
-              className={`flex flex-col items-center lg:items-start text-center lg:text-left p-6 lg:p-10 transition-all duration-700 cursor-pointer select-none rounded-2xl ${
-                activePillar === 2
+              className={`flex flex-col items-center lg:items-start text-center lg:text-left p-6 lg:p-10 transition-all duration-700 cursor-pointer select-none rounded-2xl ${activePillar === 2
                   ? "bg-white shadow-xl ring-1 ring-[#E5DAC2]/30 scale-[1.03] translate-y-[-4px] z-10"
                   : activePillar !== null
-                  ? "opacity-35 filter grayscale scale-[0.97]"
-                  : "bg-transparent border-b lg:border-b-0 lg:border-r border-[#E5DAC2]/30 rounded-none"
-              }`}
+                    ? "opacity-35 filter grayscale scale-[0.97]"
+                    : "bg-transparent border-b lg:border-b-0 lg:border-r border-[#E5DAC2]/30 rounded-none"
+                }`}
             >
               <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gold-300/10 text-gold-600 mb-6">
                 <Armchair className="w-7 h-7 stroke-[1.2]" />
@@ -880,17 +1150,16 @@ Looking forward to creating something beautiful together.`;
             </div>
 
             {/* Pillar 3: Import & Export */}
-            <div 
+            <div
               onMouseEnter={() => setActivePillar(3)}
               onMouseLeave={() => setActivePillar(null)}
               onClick={() => setActivePillar(activePillar === 3 ? null : 3)}
-              className={`flex flex-col items-center lg:items-start text-center lg:text-left p-6 lg:p-10 transition-all duration-700 cursor-pointer select-none rounded-2xl ${
-                activePillar === 3
+              className={`flex flex-col items-center lg:items-start text-center lg:text-left p-6 lg:p-10 transition-all duration-700 cursor-pointer select-none rounded-2xl ${activePillar === 3
                   ? "bg-white shadow-xl ring-1 ring-[#E5DAC2]/30 scale-[1.03] translate-y-[-4px] z-10"
                   : activePillar !== null
-                  ? "opacity-35 filter grayscale scale-[0.97]"
-                  : "bg-transparent"
-              }`}
+                    ? "opacity-35 filter grayscale scale-[0.97]"
+                    : "bg-transparent"
+                }`}
             >
               <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gold-300/10 text-gold-600 mb-6">
                 <Globe className="w-7 h-7 stroke-[1.2]" />
@@ -901,7 +1170,7 @@ Looking forward to creating something beautiful together.`;
               <p className="text-xs leading-relaxed text-black/60 font-light mb-6">
                 Your direct pipeline to global luxury. We bypass middlemen to directly procure, inspect, ship, and custom-clear rare Italian marbles, French light fixtures, and customized foreign craftsmanship straight to your site.
               </p>
-              <ul className="text-[10px] tracking-wider text-gold-600 font-semibold space-y-2 uppercase">
+              <ul className="text-[10px] tracking-wider text-gold-600 font-semibold space-y-2 uppercase relative z-10">
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-gold-500 rounded-full" /> Global Materials Sourcing
                 </li>
@@ -913,6 +1182,9 @@ Looking forward to creating something beautiful together.`;
                 </li>
               </ul>
             </div>
+
+            {/* Premium Hand-Drawn Signature Overlay with Handwriting Reveal */}
+            <AnimatedSignature />
 
           </div>
 
@@ -1110,9 +1382,10 @@ Looking forward to creating something beautiful together.`;
               <h2 className="font-serif text-3xl md:text-5xl font-light tracking-wide mb-6">
                 Our Design Process
               </h2>
-              <p className="text-white/60 text-sm font-light leading-relaxed mb-8">
-                A seamless journey from initial consultation to immaculate space handover, delivered with unwavering precision and deep-seated artistic passion.
-              </p>
+              <ScrollRevealText
+                text="A seamless journey from initial consultation to immaculate space handover, delivered with unwavering precision and deep-seated artistic passion."
+                className="text-white/60 text-sm font-light leading-relaxed mb-8"
+              />
               <SlideInButton
                 onClick={() => setConsultationModalOpen(true)}
                 variant="border-gold"
@@ -1174,20 +1447,40 @@ Looking forward to creating something beautiful together.`;
                     <div
                       key={step.id}
                       className="flex flex-col items-center md:items-start group cursor-pointer"
-                      onClick={() => setActiveStep(step.id)}
+                      onClick={() => {
+                        setActiveStep(step.id);
+                        setAutoplayTimeline(false); // Pause automatic cycling on manual interaction
+                      }}
                     >
                       {/* Step Circle Pin */}
                       <div className="relative mb-5 flex items-center justify-center md:justify-start w-full">
-                        <div className={`w-[80px] h-[80px] rounded-full border flex items-center justify-center mx-auto md:mx-0 transition-all duration-500 ${isActive
-                            ? "bg-gold-300 border-gold-300 text-dark-400 shadow-lg shadow-gold-300/20"
-                            : "bg-[#0B0C0E] border-white/10 text-gold-300 hover:border-gold-300/40"
+                        {isActive && (
+                          <svg className="absolute w-[92px] h-[92px] text-gold-300 pointer-events-none -rotate-90 z-20 left-[calc(50%-46px)] md:left-[-6px]" viewBox="0 0 100 100">
+                            <motion.circle
+                              key={`progress-${step.id}-${autoplayTimeline}`}
+                              cx="50"
+                              cy="50"
+                              r="46"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              fill="transparent"
+                              strokeDasharray={2 * Math.PI * 46}
+                              initial={{ strokeDashoffset: autoplayTimeline ? 2 * Math.PI * 46 : 0 }}
+                              animate={{ strokeDashoffset: 0 }}
+                              transition={autoplayTimeline ? { duration: 4.5, ease: "linear" } : { duration: 0.3 }}
+                            />
+                          </svg>
+                        )}
+                        <div className={`w-[80px] h-[80px] rounded-full border flex items-center justify-center mx-auto md:mx-0 transition-all duration-500 relative z-10 ${isActive
+                          ? "bg-gold-300 border-gold-300 text-dark-400 shadow-lg shadow-gold-300/20"
+                          : "bg-[#0B0C0E] border-white/10 text-gold-300 hover:border-gold-300/40"
                           }`}>
                           <IconComponent className="w-6 h-6 stroke-[1.5]" />
                         </div>
                         {/* Little absolute numeric badge */}
-                        <span className={`absolute top-0 right-[calc(50%-45px)] md:right-auto md:left-[60px] text-[10px] font-mono px-2 py-0.5 rounded-full border transition-all duration-300 ${isActive
-                            ? "bg-white text-dark-400 border-white"
-                            : "bg-dark-100 text-white/50 border-white/5"
+                        <span className={`absolute top-0 right-[calc(50%-45px)] md:right-auto md:left-[60px] text-[10px] font-mono px-2 py-0.5 rounded-full border transition-all duration-300 z-20 ${isActive
+                          ? "bg-white text-dark-400 border-white"
+                          : "bg-dark-100 text-white/50 border-white/5"
                           }`}>
                           0{step.id}
                         </span>
@@ -1266,8 +1559,8 @@ Looking forward to creating something beautiful together.`;
                       <button
                         onClick={() => togglePodcast(ep.id)}
                         className={`w-14 h-14 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20 transition-all duration-300 ${isPlaying
-                            ? "bg-gold-300 text-dark-400 scale-105"
-                            : "bg-white/10 text-white hover:bg-gold-300 hover:text-dark-400 hover:scale-110"
+                          ? "bg-gold-300 text-dark-400 scale-105"
+                          : "bg-white/10 text-white hover:bg-gold-300 hover:text-dark-400 hover:scale-110"
                           }`}
                         aria-label={isPlaying ? "Pause podcast" : "Play podcast"}
                       >
@@ -1467,10 +1760,17 @@ Looking forward to creating something beautiful together.`;
 
 
       {/* --- FOOTER SECTION --- */}
-      <footer id="contact" className="relative bg-[#0B0C0E] pt-24 pb-12 overflow-hidden border-t border-white/5">
+      <footer id="contact" className="relative bg-[#0B0C0E] pt-24 pb-12 overflow-hidden border-t border-white/5 z-10">
+
+        {/* Blueprint fine lines backdrop for architectural structural feel */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:45px_45px] pointer-events-none z-0" />
+
+        {/* Ambient warm breathing gold light wells */}
+        <div className="absolute top-[-20%] left-[10%] w-[380px] h-[380px] rounded-full bg-gold-400/5 blur-[90px] pointer-events-none animate-[pulse_10s_ease-in-out_infinite] z-0" />
+        <div className="absolute bottom-[-10%] right-[20%] w-[480px] h-[480px] rounded-full bg-gold-400/3 blur-[110px] pointer-events-none animate-[pulse_14s_ease-in-out_infinite] z-0" />
 
         {/* Subtle spinning circular backdrop on the right */}
-        <div className="absolute bottom-[-15%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-20 pointer-events-none mix-blend-screen scale-[1.1] select-none">
+        <div className="absolute bottom-[-15%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-20 pointer-events-none mix-blend-screen scale-[1.1] select-none z-0">
           <Image
             src="/vortex.jpg"
             alt="Galaxy Swirl"
@@ -1481,15 +1781,35 @@ Looking forward to creating something beautiful together.`;
 
         <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 pb-16 border-b border-white/5">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  staggerChildren: 0.12,
+                }
+              }
+            }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 pb-16 border-b border-white/5"
+          >
 
             {/* Column 1: Logo & Brief */}
-            <div className="lg:col-span-4 max-w-sm flex flex-col justify-between">
+            <motion.div 
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.25, 1, 0.5, 1] as any } }
+              }}
+              className="lg:col-span-4 max-w-sm flex flex-col justify-between"
+            >
               <div>
                 <Logo />
-                <p className="text-white/40 text-xs leading-relaxed font-light mt-6">
-                  We shape environments that elevate life itself. Transforming spaces from architectural concepts into bespoke visual masterpieces crafted around our patrons.
-                </p>
+                <ScrollRevealText
+                  text="We shape environments that elevate life itself. Transforming spaces from architectural concepts into bespoke visual masterpieces crafted around our patrons."
+                  className="text-white/40 text-xs leading-relaxed font-light mt-6"
+                />
               </div>
 
               <div className="flex gap-4 mt-8">
@@ -1503,10 +1823,16 @@ Looking forward to creating something beautiful together.`;
                   </a>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* Column 2: Navigation Links */}
-            <div className="lg:col-span-3 lg:col-start-6">
+            <motion.div 
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.25, 1, 0.5, 1] as any } }
+              }}
+              className="lg:col-span-3 lg:col-start-6"
+            >
               <h4 className="text-[10px] tracking-[0.25em] font-bold text-gold-300 uppercase mb-6">
                 Navigation
               </h4>
@@ -1529,10 +1855,16 @@ Looking forward to creating something beautiful together.`;
                   </a>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* Column 3: Services Links */}
-            <div className="lg:col-span-2">
+            <motion.div 
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.25, 1, 0.5, 1] as any } }
+              }}
+              className="lg:col-span-2"
+            >
               <h4 className="text-[10px] tracking-[0.25em] font-bold text-gold-300 uppercase mb-6">
                 Services
               </h4>
@@ -1552,10 +1884,16 @@ Looking forward to creating something beautiful together.`;
                   </span>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* Column 4: Contact Info */}
-            <div className="lg:col-span-3">
+            <motion.div 
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.25, 1, 0.5, 1] as any } }
+              }}
+              className="lg:col-span-3"
+            >
               <h4 className="text-[10px] tracking-[0.25em] font-bold text-gold-300 uppercase mb-6">
                 Contact
               </h4>
@@ -1573,9 +1911,9 @@ Looking forward to creating something beautiful together.`;
                   <span>Downtown Design District,<br />Dubai, UAE</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-          </div>
+          </motion.div>
 
           {/* Bottom Copyright Row */}
           <div className="flex flex-col sm:flex-row items-center justify-between pt-12 text-[10px] text-white/30 tracking-widest uppercase">
@@ -1585,6 +1923,14 @@ Looking forward to creating something beautiful together.`;
             <div className="flex gap-6 mt-4 sm:mt-0">
               <a href="#" className="hover:text-gold-300 transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-gold-300 transition-colors">Terms & Conditions</a>
+              <a
+                href="https://innvox.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-gold-300 transition-colors text-gold-300/70 font-semibold tracking-widest"
+              >
+                DESIGN BY INNVOX.IN
+              </a>
             </div>
           </div>
 
